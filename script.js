@@ -1,57 +1,45 @@
-// ======================================================
-// SCRIPT PER DISEGNO PORTA E CONTROTELAIO CON QUOTE SVG
-// ======================================================
-
 document.addEventListener('DOMContentLoaded', function() {
+    /* =========================
+       INPUT E BOTTONI
+    ========================= */
+    const larghezzaInput = document.getElementById('larghezza');
+    const altezzaInput = document.getElementById('altezza');
+    const aggiornaBtn = document.getElementById('aggiorna');
+    const scaricaBtn = document.getElementById('scarica-pdf');
 
-    // =========================
-    // SEZIONE INPUT UTENTE
-    // =========================
-    // Recuperiamo gli input e i pulsanti dal DOM
-    const larghezzaInput = document.getElementById('larghezza'); // larghezza porta in cm
-    const altezzaInput = document.getElementById('altezza');     // altezza porta in cm
-    const aggiornaBtn = document.getElementById('aggiorna');    // pulsante per aggiornare disegno
-    const scaricaBtn = document.getElementById('scarica-pdf');  // pulsante per scaricare PDF (non usato qui)
-
-    // =========================
-    // SEZIONE QUOTE TESTO SVG
-    // =========================
-    // Elementi SVG per mostrare le misure sul disegno
+    /* =========================
+       ELEMENTI QUOTE E RIEPILOGO
+    ========================= */
     const quotaLarghezzaPorta = document.getElementById('quota-larghezza-porta');
     const quotaAltezzaPorta = document.getElementById('quota-altezza-porta');
     const quotaLarghezzaVano = document.getElementById('quota-larghezza-vano');
     const quotaAltezzaVano = document.getElementById('quota-altezza-vano');
 
-    // Elementi HTML per riepilogo numerico delle misure
     const valLarghezzaPorta = document.getElementById('val-larghezza-porta');
     const valAltezzaPorta = document.getElementById('val-altezza-porta');
     const valLarghezzaVano = document.getElementById('val-larghezza-vano');
     const valAltezzaVano = document.getElementById('val-altezza-vano');
 
-    // =========================
-    // SEZIONE VARIABILI INIZIALI
-    // =========================
-    let larghezzaPorta = 200;   // cm
-    let altezzaPorta = 160;     // cm
-    let larghezzaVano = 500;    // cm (larghezza totale del vano con muro)
-    let altezzaVano = 300;      // cm (altezza totale del vano con muro)
-    let larghezzaControtelaio = 0; // cm, calcolata in base alla porta
+    /* =========================
+       VALORI INIZIALI
+    ========================= */
+    let larghezzaPorta = 200;
+    let altezzaPorta = 160;
+    let larghezzaVano = 500;
+    let altezzaVano = 300;
+    let larghezzaControtelaio = 0;
 
-    // =========================
-    // SEZIONE ELEMENTI SVG PRINCIPALI
-    // =========================
-    const svg = document.getElementById('disegno');       // elemento SVG contenitore
-    const pavimento = document.getElementById('pavimento'); // linea pavimento
-    const muro = document.getElementById('muro');         // rettangolo muro
-    const controtelaio = document.getElementById('controtelaio'); // rettangolo controtelaio
-    const porta = document.getElementById('porta');       // porta aperta
-    const portaChiusa = document.getElementById('porta-chiusa'); // porta chiusa
-    const binario = document.getElementById('binario');   // binario porta scorrevole
+    /* =========================
+       ELEMENTI SVG
+    ========================= */
+    const svg = document.getElementById('disegno');
+    const pavimento = document.getElementById('pavimento');
+    const muro = document.getElementById('muro');
+    const controtelaio = document.getElementById('controtelaio');
+    const porta = document.getElementById('porta');
+    const portaChiusa = document.getElementById('porta-chiusa');
+    const binario = document.getElementById('binario');
 
-    // =========================
-    // SEZIONE LINEE QUOTE
-    // =========================
-    // Linee blu e tick marks per le quote
     const lineaLarghezzaPorta = document.getElementById('linea-larghezza-porta');
     const tickLp1 = document.getElementById('tick-lp1');
     const tickLp2 = document.getElementById('tick-lp2');
@@ -65,56 +53,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const tickAv1 = document.getElementById('tick-av1');
     const tickAv2 = document.getElementById('tick-av2');
 
-    // =========================
-    // SEZIONE COSTANTI DI DISEGNO
-    // =========================
-    const scale = 2;                  // scala: 1 cm = 2 px
-    const margine = 50;               // margine SVG laterale
-    const muroLarghezza = 25;         // larghezza muro in px (tipo mattone)
-    const pavimentoY = 350;           // coordinata Y pavimento
-    const margineSopraPorta = 20;     // spazio sopra la porta per il binario
-    const extraMuroLateral = 150;     // extra spazio muro laterale per "più parete"
-    const tickSize = 5;               // dimensione dei tick delle quote
+    /* =========================
+       COSTANTI DI DISEGNO
+    ========================= */
+    const scale = 2;                 // scala: 1 cm = 2 px
+    const margine = 50;              // margine generale del disegno
+    const muroLarghezzaBase = 25;    // larghezza base del muro (mattone) in px
+    const pavimentoY = 350;          // posizione Y del pavimento
+    const margineSopraPorta = 20;    // spazio sopra porta per binario
+    const extraMuroLaterale = 150;   // muro extra laterale in px
+    const tickSize = 5;              // dimensione dei segni delle quote
+    const binarioAltezza = 6;        // altezza del binario in px
 
-    // =========================
-    // FUNZIONE PRINCIPALE DI AGGIORNAMENTO
-    // =========================
+    /* =========================
+       FUNZIONE PRINCIPALE DI AGGIORNAMENTO
+    ========================= */
     function aggiornaConfigurazione() {
-        // =========================
-        // 1. LEGGIAMO INPUT UTENTE
-        // =========================
         const larg = parseFloat(larghezzaInput.value) || 0;
         const alt = parseFloat(altezzaInput.value) || 0;
 
         if (larg > 0 && alt > 0) {
-
+            // =========================
+            // CALCOLO DIMENSIONI ELEMENTI
+            // =========================
             larghezzaPorta = larg;
             altezzaPorta = alt;
 
-            // =========================
-            // 2. CALCOLO DIMENSIONI ELEMENTI IN PIXEL
-            // =========================
             const portaWidthPx = larghezzaPorta * scale;
             const portaHeightPx = altezzaPorta * scale;
 
-            // Controtelaio leggermente più largo della porta
+            // Controtelaio: altezza = porta + spazio binario
             const controtelaioWidthPx = portaWidthPx * 2;
-            const controtelaioHeightPx = portaHeightPx + margineSopraPorta;
+            const controtelaioHeightPx = portaHeightPx + binarioAltezza;
 
-            // Muro totale: controtelaio + margine muro + extra lato
-            const muroWidthPx = controtelaioWidthPx + 2 * muroLarghezza + 2 * extraMuroLateral;
-            const muroHeightPx = controtelaioHeightPx + muroLarghezza;
+            // Muro più largo per avere pareti laterali
+            const muroWidthPx = controtelaioWidthPx + 2 * muroLarghezzaBase + 2 * extraMuroLaterale;
+            const muroHeightPx = controtelaioHeightPx + muroLarghezzaBase;
 
-            // Salviamo valori numerici da visualizzare
             larghezzaControtelaio = controtelaioWidthPx / scale;
             larghezzaVano = muroWidthPx / scale;
             altezzaVano = muroHeightPx / scale;
 
             // =========================
-            // 3. POSIZIONAMENTO ELEMENTI PRINCIPALI
+            // POSIZIONAMENTO DA PAVIMENTO
             // =========================
-
-            // --- Muro ---
             const muroX = margine;
             const muroY = pavimentoY - muroHeightPx;
             muro.setAttribute('x', muroX);
@@ -122,122 +104,135 @@ document.addEventListener('DOMContentLoaded', function() {
             muro.setAttribute('width', muroWidthPx);
             muro.setAttribute('height', muroHeightPx);
 
-            // --- Controtelaio ---
-            const controtelaioX = muroX + muroLarghezza + extraMuroLateral;
+            const controtelaioX = muroX + muroLarghezzaBase + extraMuroLaterale;
             const controtelaioY = pavimentoY - controtelaioHeightPx;
             controtelaio.setAttribute('x', controtelaioX);
             controtelaio.setAttribute('y', controtelaioY);
             controtelaio.setAttribute('width', controtelaioWidthPx);
             controtelaio.setAttribute('height', controtelaioHeightPx);
 
-            // --- Porta aperta ---
-            const portaX = controtelaioX + 10; // piccolo offset interno
+            const portaX = controtelaioX + 10;
             const portaY = pavimentoY - portaHeightPx;
             porta.setAttribute('x', portaX);
             porta.setAttribute('y', portaY);
             porta.setAttribute('width', portaWidthPx);
             porta.setAttribute('height', portaHeightPx);
 
-            // --- Porta chiusa ---
             const portaChiusaX = controtelaioX + controtelaioWidthPx - portaWidthPx - 10;
             portaChiusa.setAttribute('x', portaChiusaX);
             portaChiusa.setAttribute('y', portaY);
             portaChiusa.setAttribute('width', portaWidthPx);
             portaChiusa.setAttribute('height', portaHeightPx);
 
-            // --- Binario ---
-            const binarioY = portaY - margineSopraPorta;
+            // =========================
+            // BINARIO TRA PORTA E CONTROTELAIO
+            // =========================
+            // Il binario inizia in cima alla porta e ha un'altezza visibile maggiore
+            const binarioY = portaY - binarioAltezza / 2;
             binario.setAttribute('x1', controtelaioX);
             binario.setAttribute('x2', controtelaioX + controtelaioWidthPx);
             binario.setAttribute('y1', binarioY);
             binario.setAttribute('y2', binarioY);
+            binario.setAttribute('stroke-width', binarioAltezza);
 
-            // --- Pavimento ---
+            // Pavimento
             pavimento.setAttribute('x1', 0);
             pavimento.setAttribute('y1', pavimentoY);
             pavimento.setAttribute('x2', muroX + muroWidthPx + margine);
             pavimento.setAttribute('y2', pavimentoY);
 
             // =========================
-            // 4. QUOTE DINAMICHE (LINEE E TESTO)
+            // QUOTE DINAMICHE
             // =========================
 
-            // --- Larghezza porta (in basso) ---
+            // Larghezza porta (sotto)
             const yQuotaLp = portaY + portaHeightPx + 20;
             lineaLarghezzaPorta.setAttribute('x1', portaX);
             lineaLarghezzaPorta.setAttribute('x2', portaX + portaWidthPx);
             lineaLarghezzaPorta.setAttribute('y1', yQuotaLp);
             lineaLarghezzaPorta.setAttribute('y2', yQuotaLp);
+
             tickLp1.setAttribute('x1', portaX);
             tickLp1.setAttribute('x2', portaX);
             tickLp1.setAttribute('y1', yQuotaLp - tickSize);
             tickLp1.setAttribute('y2', yQuotaLp + tickSize);
+
             tickLp2.setAttribute('x1', portaX + portaWidthPx);
             tickLp2.setAttribute('x2', portaX + portaWidthPx);
             tickLp2.setAttribute('y1', yQuotaLp - tickSize);
             tickLp2.setAttribute('y2', yQuotaLp + tickSize);
+
             quotaLarghezzaPorta.setAttribute('x', portaX + portaWidthPx / 2);
             quotaLarghezzaPorta.setAttribute('y', yQuotaLp - 5);
             quotaLarghezzaPorta.textContent = larghezzaPorta + ' cm';
 
-            // --- Altezza porta (a lato) ---
+            // Altezza porta (destra)
             const xQuotaAp = portaX + portaWidthPx + 20;
             lineaAltezzaPorta.setAttribute('x1', xQuotaAp);
             lineaAltezzaPorta.setAttribute('x2', xQuotaAp);
             lineaAltezzaPorta.setAttribute('y1', portaY);
             lineaAltezzaPorta.setAttribute('y2', portaY + portaHeightPx);
+
             tickAp1.setAttribute('x1', xQuotaAp - tickSize);
             tickAp1.setAttribute('x2', xQuotaAp + tickSize);
             tickAp1.setAttribute('y1', portaY);
             tickAp1.setAttribute('y2', portaY);
+
             tickAp2.setAttribute('x1', xQuotaAp - tickSize);
             tickAp2.setAttribute('x2', xQuotaAp + tickSize);
             tickAp2.setAttribute('y1', portaY + portaHeightPx);
             tickAp2.setAttribute('y2', portaY + portaHeightPx);
+
             quotaAltezzaPorta.setAttribute('x', xQuotaAp + 15);
             quotaAltezzaPorta.setAttribute('y', portaY + portaHeightPx / 2);
             quotaAltezzaPorta.setAttribute('transform', `rotate(90 ${xQuotaAp + 15} ${portaY + portaHeightPx / 2})`);
             quotaAltezzaPorta.textContent = altezzaPorta + ' cm';
 
-            // --- Larghezza controtelaio (in alto) ---
-            const yQuotaLv = controtelaioY - 10;
+            // Larghezza controtelaio (sopra)
+            const yQuotaLv = pavimentoY + 40;
             lineaLarghezzaVano.setAttribute('x1', controtelaioX);
             lineaLarghezzaVano.setAttribute('x2', controtelaioX + controtelaioWidthPx);
             lineaLarghezzaVano.setAttribute('y1', yQuotaLv);
             lineaLarghezzaVano.setAttribute('y2', yQuotaLv);
+
             tickLv1.setAttribute('x1', controtelaioX);
             tickLv1.setAttribute('x2', controtelaioX);
             tickLv1.setAttribute('y1', yQuotaLv - tickSize);
             tickLv1.setAttribute('y2', yQuotaLv + tickSize);
+
             tickLv2.setAttribute('x1', controtelaioX + controtelaioWidthPx);
             tickLv2.setAttribute('x2', controtelaioX + controtelaioWidthPx);
             tickLv2.setAttribute('y1', yQuotaLv - tickSize);
             tickLv2.setAttribute('y2', yQuotaLv + tickSize);
+
             quotaLarghezzaVano.setAttribute('x', controtelaioX + controtelaioWidthPx / 2);
             quotaLarghezzaVano.setAttribute('y', yQuotaLv - 5);
             quotaLarghezzaVano.textContent = larghezzaControtelaio + ' cm';
 
-            // --- Altezza controtelaio (a lato) ---
+            // Altezza controtelaio (destra)
             const xQuotaAv = controtelaioX + controtelaioWidthPx + 20;
             lineaAltezzaVano.setAttribute('x1', xQuotaAv);
             lineaAltezzaVano.setAttribute('x2', xQuotaAv);
             lineaAltezzaVano.setAttribute('y1', controtelaioY);
             lineaAltezzaVano.setAttribute('y2', controtelaioY + controtelaioHeightPx);
+
             tickAv1.setAttribute('x1', xQuotaAv - tickSize);
             tickAv1.setAttribute('x2', xQuotaAv + tickSize);
             tickAv1.setAttribute('y1', controtelaioY);
             tickAv1.setAttribute('y2', controtelaioY);
+
             tickAv2.setAttribute('x1', xQuotaAv - tickSize);
             tickAv2.setAttribute('x2', xQuotaAv + tickSize);
             tickAv2.setAttribute('y1', controtelaioY + controtelaioHeightPx);
             tickAv2.setAttribute('y2', controtelaioY + controtelaioHeightPx);
+
             quotaAltezzaVano.setAttribute('x', xQuotaAv + 15);
             quotaAltezzaVano.setAttribute('y', controtelaioY + controtelaioHeightPx / 2);
             quotaAltezzaVano.setAttribute('transform', `rotate(90 ${xQuotaAv + 15} ${controtelaioY + controtelaioHeightPx / 2})`);
             quotaAltezzaVano.textContent = altezzaVano + ' cm';
 
             // =========================
-            // 5. AGGIORNAMENTO RIEPILOGO NUMERICO
+            // AGGIORNAMENTO RIEPILOGO
             // =========================
             valLarghezzaPorta.textContent = larghezzaPorta;
             valAltezzaPorta.textContent = altezzaPorta;
@@ -245,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
             valAltezzaVano.textContent = altezzaVano;
 
             // =========================
-            // 6. AGGIUSTAMENTO VIEWBOX SVG DINAMICO
+            // VIEWBOX DINAMICO
             // =========================
             const totalWidth = muroX + muroWidthPx + margine;
             const minY = Math.min(muroY, binarioY - 20);
@@ -254,15 +249,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // =========================
-    // EVENT LISTENERS
-    // =========================
+    /* =========================
+       EVENTI
+    ========================= */
     aggiornaBtn.addEventListener('click', aggiornaConfigurazione);
     larghezzaInput.addEventListener('input', aggiornaConfigurazione);
     altezzaInput.addEventListener('input', aggiornaConfigurazione);
 
-    // =========================
-    // AVVIO INIZIALE
-    // =========================
+    // Avvio iniziale
     aggiornaConfigurazione();
 });
