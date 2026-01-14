@@ -23,11 +23,18 @@ document.addEventListener('DOMContentLoaded', function() {
     /* =========================
        VALORI INIZIALI
     ========================= */
-    let larghezzaPorta = 200;
-    let altezzaPorta = 160;
-    let larghezzaVano = 500;
-    let altezzaVano = 300;
-    let larghezzaControtelaio = 0;
+    let larghezzaPorta = 200;    // larghezza porta in cm
+    let altezzaPorta = 160;      // altezza porta in cm
+    let larghezzaVano = 500;     // larghezza vano in cm
+    let altezzaVano = 300;       // altezza vano in cm
+    let larghezzaControtelaio = 0; // calcolata in base alla porta
+
+    /* =========================
+       NUOVI SPESSORI (per effetto 3D)
+    ========================= */
+    let spessoreMuro = 25;           // spessore muro reale in px
+    let spessoreControtelaio = 10;   // spessore controtelaio in px
+    let spessorePorta = 5;           // spessore porta in px
 
     /* =========================
        ELEMENTI SVG
@@ -58,12 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
     ========================= */
     const scale = 2;                 // scala: 1 cm = 2 px
     const margine = 50;              // margine generale del disegno
-    const muroLarghezzaBase = 25;    // larghezza base del muro (mattone) in px
     const pavimentoY = 350;          // posizione Y del pavimento
     const margineSopraPorta = 20;    // spazio sopra porta per binario
     const extraMuroLaterale = 150;   // muro extra laterale in px
     const tickSize = 5;              // dimensione dei segni delle quote
     const binarioAltezza = 6;        // altezza del binario in px
+    const offset3D = 8;              // offset per effetto 3D (profondità)
 
     /* =========================
        FUNZIONE PRINCIPALE DI AGGIORNAMENTO
@@ -82,13 +89,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const portaWidthPx = larghezzaPorta * scale;
             const portaHeightPx = altezzaPorta * scale;
 
-            // Controtelaio: altezza = porta + spazio binario
+            // Controtelaio: altezza = porta + binario
             const controtelaioWidthPx = portaWidthPx * 2;
             const controtelaioHeightPx = portaHeightPx + binarioAltezza;
 
             // Muro più largo per avere pareti laterali
-            const muroWidthPx = controtelaioWidthPx + 2 * muroLarghezzaBase + 2 * extraMuroLaterale;
-            const muroHeightPx = controtelaioHeightPx + muroLarghezzaBase;
+            const muroWidthPx = controtelaioWidthPx + 2 * spessoreMuro + 2 * extraMuroLaterale;
+            const muroHeightPx = controtelaioHeightPx + spessoreMuro;
 
             larghezzaControtelaio = controtelaioWidthPx / scale;
             larghezzaVano = muroWidthPx / scale;
@@ -99,17 +106,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // =========================
             const muroX = margine;
             const muroY = pavimentoY - muroHeightPx;
+            // Disegno muro principale
             muro.setAttribute('x', muroX);
             muro.setAttribute('y', muroY);
             muro.setAttribute('width', muroWidthPx);
             muro.setAttribute('height', muroHeightPx);
+            muro.setAttribute('fill', '#cccccc');
 
-            const controtelaioX = muroX + muroLarghezzaBase + extraMuroLaterale;
+            // Effetto 3D: lato muro
+            const muro3DX = muroX + offset3D;
+            const muro3DY = muroY + offset3D;
+            // creiamo un rettangolo "ombra" per muro
+            // (da aggiungere come SVG <rect> separato nel tuo HTML se vuoi)
+            // oppure semplicemente consideriamo per visualizzazione
+
+            const controtelaioX = muroX + spessoreMuro + extraMuroLaterale;
             const controtelaioY = pavimentoY - controtelaioHeightPx;
             controtelaio.setAttribute('x', controtelaioX);
             controtelaio.setAttribute('y', controtelaioY);
             controtelaio.setAttribute('width', controtelaioWidthPx);
             controtelaio.setAttribute('height', controtelaioHeightPx);
+            controtelaio.setAttribute('fill', '#9999ff');
 
             const portaX = controtelaioX + 10;
             const portaY = pavimentoY - portaHeightPx;
@@ -117,23 +134,25 @@ document.addEventListener('DOMContentLoaded', function() {
             porta.setAttribute('y', portaY);
             porta.setAttribute('width', portaWidthPx);
             porta.setAttribute('height', portaHeightPx);
+            porta.setAttribute('fill', '#66cc66');
 
             const portaChiusaX = controtelaioX + controtelaioWidthPx - portaWidthPx - 10;
             portaChiusa.setAttribute('x', portaChiusaX);
             portaChiusa.setAttribute('y', portaY);
             portaChiusa.setAttribute('width', portaWidthPx);
             portaChiusa.setAttribute('height', portaHeightPx);
+            portaChiusa.setAttribute('fill', '#66cc66');
 
             // =========================
             // BINARIO TRA PORTA E CONTROTELAIO
             // =========================
-            // Il binario inizia in cima alla porta e ha un'altezza visibile maggiore
             const binarioY = portaY - binarioAltezza / 2;
             binario.setAttribute('x1', controtelaioX);
             binario.setAttribute('x2', controtelaioX + controtelaioWidthPx);
             binario.setAttribute('y1', binarioY);
             binario.setAttribute('y2', binarioY);
             binario.setAttribute('stroke-width', binarioAltezza);
+            binario.setAttribute('stroke', '#0000ff');
 
             // Pavimento
             pavimento.setAttribute('x1', 0);
