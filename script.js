@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
             quotaAltezzaPorta.textContent = altezzaPorta + ' cm';
 
             // Larghezza controtelaio
-            const yQuotaLv = pavimentoY + 20;
+            const yQuotaLv = pavimentoY + 40;
             lineaLarghezzaVano.setAttribute('x1', controtelaioX);
             lineaLarghezzaVano.setAttribute('x2', controtelaioX + controtelaioWidthPx);
             lineaLarghezzaVano.setAttribute('y1', yQuotaLv);
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
             quotaLarghezzaVano.textContent = larghezzaControtelaio + ' cm';
 
             // Altezza controtelaio
-            const xQuotaAv = muroX + muroWidthPx + 20;
+            const xQuotaAv = controtelaioX + controtelaioWidthPx + 20;
             lineaAltezzaVano.setAttribute('x1', xQuotaAv);
             lineaAltezzaVano.setAttribute('x2', xQuotaAv);
             lineaAltezzaVano.setAttribute('y1', controtelaioY);
