@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const altezzaInput = document.getElementById('altezza');
     const aggiornaBtn = document.getElementById('aggiorna');
     const scaricaBtn = document.getElementById('scarica-pdf');
+    const schema = document.querySelector('.schema');
+    const contenutoPdf = document.getElementById('contenuto-pdf');
+
+
 
     /* =========================
        ELEMENTI QUOTE E RIEPILOGO
@@ -267,6 +271,33 @@ document.addEventListener('DOMContentLoaded', function() {
             svg.setAttribute('viewBox', `0 ${minY} ${totalWidth} ${totalHeight}`);
         }
     }
+
+
+     /* =========================
+       ESPORTAZIONE PDF
+    ========================= */
+    scaricaBtn.addEventListener('click', async () => {
+            const canvas = await html2canvas(contenutoPdf, {
+
+            backgroundColor: '#ffffff',
+            scale: 2
+            
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+
+        const pdf = new jsPDF('l', 'mm', 'a4');
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = pageWidth - 150;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        pdf.save('schema-porta-scrigno.pdf');
+    });
 
     /* =========================
        EVENTI
