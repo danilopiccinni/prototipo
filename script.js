@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const spessoreMuro = 25; // px
     const pavimentoY = 350;
     const margineSopraPorta = 20; // px (binario)
+    const extraMuroLateral = 150; // px extra muro laterale
+    const tickSize = 5; // dimensione dei segni delle quote
 
     function aggiornaConfigurazione() {
         const larg = parseFloat(larghezzaInput.value) || 0;
@@ -65,7 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const controtelaioWidthPx = portaWidthPx * 2;
             const controtelaioHeightPx = portaHeightPx + margineSopraPorta;
 
-            const muroWidthPx = controtelaioWidthPx + 2 * spessoreMuro;
+            // Muro più largo per avere "più parete laterale"
+            const muroWidthPx = controtelaioWidthPx + 2 * spessoreMuro + 2 * extraMuroLateral;
             const muroHeightPx = controtelaioHeightPx + spessoreMuro;
 
             larghezzaControtelaio = controtelaioWidthPx / scale;
@@ -83,8 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             muro.setAttribute('width', muroWidthPx);
             muro.setAttribute('height', muroHeightPx);
 
-            // Controtelaio appoggiato a terra
-            const controtelaioX = muroX + spessoreMuro;
+            const controtelaioX = muroX + spessoreMuro + extraMuroLateral;
             const controtelaioY = pavimentoY - controtelaioHeightPx;
 
             controtelaio.setAttribute('x', controtelaioX);
@@ -92,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
             controtelaio.setAttribute('width', controtelaioWidthPx);
             controtelaio.setAttribute('height', controtelaioHeightPx);
 
-            // Porta appoggiata a terra
             const portaX = controtelaioX + 10;
             const portaY = pavimentoY - portaHeightPx;
 
@@ -101,36 +102,116 @@ document.addEventListener('DOMContentLoaded', function() {
             porta.setAttribute('width', portaWidthPx);
             porta.setAttribute('height', portaHeightPx);
 
-            // Porta chiusa (a destra)
             const portaChiusaX = controtelaioX + controtelaioWidthPx - portaWidthPx - 10;
-
             portaChiusa.setAttribute('x', portaChiusaX);
             portaChiusa.setAttribute('y', portaY);
             portaChiusa.setAttribute('width', portaWidthPx);
             portaChiusa.setAttribute('height', portaHeightPx);
 
-            // Binario sopra la porta
             const binarioY = portaY - margineSopraPorta;
-
             binario.setAttribute('x1', controtelaioX);
             binario.setAttribute('x2', controtelaioX + controtelaioWidthPx);
             binario.setAttribute('y1', binarioY);
             binario.setAttribute('y2', binarioY);
 
-            // Pavimento
             pavimento.setAttribute('x1', 0);
             pavimento.setAttribute('y1', pavimentoY);
             pavimento.setAttribute('x2', muroX + muroWidthPx + margine);
             pavimento.setAttribute('y2', pavimentoY);
 
             /* =============================
-               TESTI
+               QUOTE DINAMICHE
             ============================== */
+
+            // Larghezza porta
+            const yQuotaLp = portaY + portaHeightPx + 20;
+            lineaLarghezzaPorta.setAttribute('x1', portaX);
+            lineaLarghezzaPorta.setAttribute('x2', portaX + portaWidthPx);
+            lineaLarghezzaPorta.setAttribute('y1', yQuotaLp);
+            lineaLarghezzaPorta.setAttribute('y2', yQuotaLp);
+
+            tickLp1.setAttribute('x1', portaX);
+            tickLp1.setAttribute('x2', portaX);
+            tickLp1.setAttribute('y1', yQuotaLp - tickSize);
+            tickLp1.setAttribute('y2', yQuotaLp + tickSize);
+
+            tickLp2.setAttribute('x1', portaX + portaWidthPx);
+            tickLp2.setAttribute('x2', portaX + portaWidthPx);
+            tickLp2.setAttribute('y1', yQuotaLp - tickSize);
+            tickLp2.setAttribute('y2', yQuotaLp + tickSize);
+
+            quotaLarghezzaPorta.setAttribute('x', portaX + portaWidthPx / 2);
+            quotaLarghezzaPorta.setAttribute('y', yQuotaLp - 5);
             quotaLarghezzaPorta.textContent = larghezzaPorta + ' cm';
+
+            // Altezza porta
+            const xQuotaAp = portaX + portaWidthPx + 20;
+            lineaAltezzaPorta.setAttribute('x1', xQuotaAp);
+            lineaAltezzaPorta.setAttribute('x2', xQuotaAp);
+            lineaAltezzaPorta.setAttribute('y1', portaY);
+            lineaAltezzaPorta.setAttribute('y2', portaY + portaHeightPx);
+
+            tickAp1.setAttribute('x1', xQuotaAp - tickSize);
+            tickAp1.setAttribute('x2', xQuotaAp + tickSize);
+            tickAp1.setAttribute('y1', portaY);
+            tickAp1.setAttribute('y2', portaY);
+
+            tickAp2.setAttribute('x1', xQuotaAp - tickSize);
+            tickAp2.setAttribute('x2', xQuotaAp + tickSize);
+            tickAp2.setAttribute('y1', portaY + portaHeightPx);
+            tickAp2.setAttribute('y2', portaY + portaHeightPx);
+
+            quotaAltezzaPorta.setAttribute('x', xQuotaAp + 15);
+            quotaAltezzaPorta.setAttribute('y', portaY + portaHeightPx / 2);
+            quotaAltezzaPorta.setAttribute('transform', `rotate(90 ${xQuotaAp + 15} ${portaY + portaHeightPx / 2})`);
             quotaAltezzaPorta.textContent = altezzaPorta + ' cm';
+
+            // Larghezza controtelaio
+            const yQuotaLv = pavimentoY + 20;
+            lineaLarghezzaVano.setAttribute('x1', controtelaioX);
+            lineaLarghezzaVano.setAttribute('x2', controtelaioX + controtelaioWidthPx);
+            lineaLarghezzaVano.setAttribute('y1', yQuotaLv);
+            lineaLarghezzaVano.setAttribute('y2', yQuotaLv);
+
+            tickLv1.setAttribute('x1', controtelaioX);
+            tickLv1.setAttribute('x2', controtelaioX);
+            tickLv1.setAttribute('y1', yQuotaLv - tickSize);
+            tickLv1.setAttribute('y2', yQuotaLv + tickSize);
+
+            tickLv2.setAttribute('x1', controtelaioX + controtelaioWidthPx);
+            tickLv2.setAttribute('x2', controtelaioX + controtelaioWidthPx);
+            tickLv2.setAttribute('y1', yQuotaLv - tickSize);
+            tickLv2.setAttribute('y2', yQuotaLv + tickSize);
+
+            quotaLarghezzaVano.setAttribute('x', controtelaioX + controtelaioWidthPx / 2);
+            quotaLarghezzaVano.setAttribute('y', yQuotaLv - 5);
             quotaLarghezzaVano.textContent = larghezzaControtelaio + ' cm';
+
+            // Altezza controtelaio
+            const xQuotaAv = muroX + muroWidthPx + 20;
+            lineaAltezzaVano.setAttribute('x1', xQuotaAv);
+            lineaAltezzaVano.setAttribute('x2', xQuotaAv);
+            lineaAltezzaVano.setAttribute('y1', controtelaioY);
+            lineaAltezzaVano.setAttribute('y2', controtelaioY + controtelaioHeightPx);
+
+            tickAv1.setAttribute('x1', xQuotaAv - tickSize);
+            tickAv1.setAttribute('x2', xQuotaAv + tickSize);
+            tickAv1.setAttribute('y1', controtelaioY);
+            tickAv1.setAttribute('y2', controtelaioY);
+
+            tickAv2.setAttribute('x1', xQuotaAv - tickSize);
+            tickAv2.setAttribute('x2', xQuotaAv + tickSize);
+            tickAv2.setAttribute('y1', controtelaioY + controtelaioHeightPx);
+            tickAv2.setAttribute('y2', controtelaioY + controtelaioHeightPx);
+
+            quotaAltezzaVano.setAttribute('x', xQuotaAv + 15);
+            quotaAltezzaVano.setAttribute('y', controtelaioY + controtelaioHeightPx / 2);
+            quotaAltezzaVano.setAttribute('transform', `rotate(90 ${xQuotaAv + 15} ${controtelaioY + controtelaioHeightPx / 2})`);
             quotaAltezzaVano.textContent = altezzaVano + ' cm';
 
+            /* =============================
+               AGGIORNAMENTO RIEPILOGO
+            ============================== */
             valLarghezzaPorta.textContent = larghezzaPorta;
             valAltezzaPorta.textContent = altezzaPorta;
             valLarghezzaVano.textContent = larghezzaControtelaio;
@@ -138,12 +219,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             /* =============================
                FIX VIEWBOX DINAMICO
-               per evitare tagli porta alta
             ============================== */
             const totalWidth = muroX + muroWidthPx + margine;
             const minY = Math.min(muroY, binarioY - 20);
             const totalHeight = pavimentoY + 50 - minY;
-
             svg.setAttribute('viewBox', `0 ${minY} ${totalWidth} ${totalHeight}`);
         }
     }
